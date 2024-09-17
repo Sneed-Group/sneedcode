@@ -331,7 +331,7 @@
         };
 
         function quickSaveFile(content) {
-          const fileName = prompt("File name to quick save as:");
+          const fileName = prompt("File name to quick save as:", `${currentFile}`);
           const blob = new Blob([content], { type: "text/plain" });
           const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);

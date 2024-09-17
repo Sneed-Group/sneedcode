@@ -192,6 +192,23 @@
             d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
           />
         </svg>
+
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="open-plugin-icon"
+        >
+          <path d="M15 10H9v5h6v-5zM21 4h-4V2H7v2H3c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7 4h10v2H7V4zm12 16H5V8h14v12z" />
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="open-folder-plugins-icon"
+        >
+          <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+        </svg>
       </div>
       <div class="main-content">
         <div class="file-explorer">
@@ -407,6 +424,66 @@
               updateFileList();
               openFile(fileName);
             }
+          });
+
+        document
+          .getElementById("open-plugin-icon")
+          .addEventListener("click", () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = ".js";
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                try {
+                  // Load and execute JavaScript code from the file
+                  new Function(event.target.result)();
+                  alert(`Plugin "${file.name}" executed successfully.`);
+                } catch (err) {
+                  alert(`Failed to execute plugin "${file.name}": ${err.message}`);
+                }
+              };
+              reader.readAsText(file);
+            };
+            input.click();
+          });
+
+        document
+          .getElementById("open-folder-plugins-icon")
+          .addEventListener("click", () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.webkitdirectory = true;
+            input.onchange = (e) => {
+              const folderFiles = e.target.files;
+              let allFilesLoaded = true;
+
+              for (let i = 0; i < folderFiles.length; i++) {
+                const file = folderFiles[i];
+                if (file.name.endsWith(".js")) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    try {
+                    // Load and execute JavaScript code from the file
+                      new Function(event.target.result)();
+                      console.log(`Plugin "${file.name}" executed successfully.`);
+                    } catch (err) {
+                      console.error(`Failed to execute plugin "${file.name}": ${err.message}`);
+                      allFilesLoaded = false;
+                    }
+                  };
+                  reader.readAsText(file);
+                }
+              }
+
+              if (allFilesLoaded) {
+                alert("All plugins executed successfully.");
+              } else {
+                alert("Some plugins failed to execute. Check console for details.");
+              }
+            };
+            input.click();
           });
 
         editor.on("change", () => {

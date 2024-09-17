@@ -342,11 +342,12 @@
 
         async function saveAs(content) {
           const blob = new Blob([content], { type: "text/plain" });
+          const extension = currentFile.split(".").pop().toLowerCase();
           const fileHandle = await window.showSaveFilePicker({
             types: [
               {
                 description: "Source code",
-                accept: { "text/plain": [".txt"] },
+                accept: { "text/plain": [`.${extension || "txt"}`] },
               },
             ],
           });

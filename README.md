@@ -4,3 +4,5 @@ sneedCode is a modern code editor inspired by Visual Studio Code, designed with 
 All stable releases will be released at [the releases page.](https://github.com/Sneed-Group/sneedcode/releases)
 
 Developed with care by the Sneed Group.
+
+<img width="42%" align="right" src="vscode-sneedcode-meme.png"></img>

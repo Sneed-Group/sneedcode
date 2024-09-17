@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="https://sneedcode.dev/" />
+    <title>SneedCode - Code Editor</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+          "Helvetica Neue", sans-serif;
+      }
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+      .sidebar {
+        width: 50px;
+        background-color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 10px;
+      }
+      .sidebar-icon {
+        width: 30px;
+        height: 30px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        padding: 5px;
+        border-radius: 5px;
+      }
+      .sidebar-icon:hover {
+        background-color: #4a4a4a;
+      }
+      .main-content {
+        flex: 1;
+        display: flex;
+      }
+      .file-explorer {
+        width: 200px;
+        background-color: #252526;
+        color: #fff;
+        padding: 10px;
+        overflow-y: auto;
+        transition: width 0.3s ease;
+      }
+      .file-explorer.hidden {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px;
+        cursor: pointer;
+      }
+      .file-item:hover {
+        background-color: #2a2d2e;
+      }
+      .file-actions {
+        display: none;
+      }
+      .file-item:hover .file-actions {
+        display: block;
+      }
+      .file-action {
+        cursor: pointer;
+        margin-left: 5px;
+      }
+      .editor {
+        flex: 1;
+        background-color: #1e1e1e;
+        padding: 10px;
+      }
+      .CodeMirror {
+        height: 100% !important;
+      }
+      .status-bar {
+        height: 22px;
+        background-color: #007acc;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+      #toggle-explorer {
+        transition: transform 0.3s ease;
+      }
+      #toggle-explorer.flipped {
+        transform: rotate(180deg);
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="sidebar">
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="toggle-explorer"
+        >
+          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="file-icon"
+        >
+          <path
+            d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7z"
+          />
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="new-file-icon"
+        >
+          <path
+            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"
+          />
+          <path d="M13 11h-2v3H8v2h3v3h2v-3h3v-2h-3z" />
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="save-icon"
+        >
+          <path
+            d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
+          />
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="save-as-icon"
+        >
+          <path
+            d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
+          />
+          <g transform="translate(15, 15) scale(0.5)">
+            <rect
+              x="0"
+              y="0"
+              width="14"
+              height="14"
+              fill="#333"
+              rx="2"
+              ry="2"
+            />
+            <path d="M6 2v4H2v2h4v4h2V8h4V6H8V2H6z" fill="#fff" />
+          </g>
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="open-file-icon"
+        >
+          <path
+            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"
+          />
+        </svg>
+        <svg
+          class="sidebar-icon"
+          viewBox="0 0 24 24"
+          fill="#fff"
+          id="open-folder-icon"
+        >
+          <path
+            d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+          />
+        </svg>
+      </div>
+      <div class="main-content">
+        <div class="file-explorer">
+          <h3>Explorer</h3>
+          <div id="file-list"></div>
+        </div>
+        <div class="editor">
+          <textarea id="code-area" spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="status-bar">SneedCode 1.0.0 | UTF-8 | Markdown</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/css/css.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const codeArea = document.getElementById("code-area");
+        const editor = CodeMirror.fromTextArea(codeArea, {
+          lineNumbers: true,
+          theme: "dracula",
+          autoCloseBrackets: true,
+          matchBrackets: true,
+          indentUnit: 2,
+          tabSize: 2,
+          indentWithTabs: false,
+          lineWrapping: true,
+        });
+
+        editor.setSize("100%", "100%");
+
+        const fileList = document.getElementById("file-list");
+        const files = {
+          "Welcome2SneedCode.md":
+            "# Welcome to SneedCode\n\nThis is a speedy web-based code editor inspired by VSCode. Made with <3 by Sneed Group.",
+        };
+        let currentFile = "Welcome2SneedCode.md";
+
+        function updateFileList() {
+          fileList.innerHTML = "";
+          Object.keys(files).forEach((fileName) => {
+            const fileItem = document.createElement("div");
+            fileItem.className = "file-item";
+            fileItem.innerHTML = `
+            <span>${fileName}</span>
+            <span class="file-actions">
+              <span class="file-action" onclick="renameFile('${fileName}')">🖊️</span>
+              <span class="file-action" onclick="deleteFile('${fileName}')">🗑️</span>
+            </span>
+          `;
+            fileItem.onclick = (e) => {
+              if (!e.target.classList.contains("file-action")) {
+                openFile(fileName);
+              }
+            };
+            fileList.appendChild(fileItem);
+          });
+        }
+
+        function openFile(fileName) {
+          currentFile = fileName;
+          editor.setValue(files[fileName]);
+          editor.setOption("mode", getFileMode(fileName));
+          updateStatusBar();
+        }
+
+        function getFileMode(fileName) {
+          const extension = fileName.split(".").pop().toLowerCase();
+          switch (extension) {
+            case "js":
+              return "javascript";
+            case "html":
+              return "htmlmixed";
+            case "css":
+              return "css";
+            case "md":
+              return "markdown";
+            default:
+              return "text/plain";
+          }
+        }
+
+        function updateStatusBar() {
+          const statusBar = document.querySelector(".status-bar");
+          const mode = editor.getOption("mode");
+          statusBar.textContent = `SneedCode 1.0.0 | UTF-8 | ${
+            mode.charAt(0).toUpperCase() + mode.slice(1)
+          }`;
+        }
+
+        window.renameFile = (oldName) => {
+          const newName = prompt("Enter new file name:", oldName);
+          if (newName && newName !== oldName) {
+            files[newName] = files[oldName];
+            delete files[oldName];
+            if (currentFile === oldName) {
+              currentFile = newName;
+            }
+            updateFileList();
+            updateStatusBar();
+          }
+        };
+
+        window.deleteFile = (fileName) => {
+          if (confirm(`Are you sure you want to delete ${fileName}?`)) {
+            delete files[fileName];
+            if (currentFile === fileName) {
+              currentFile = Object.keys(files)[0] || "";
+              if (currentFile) {
+                openFile(currentFile);
+              } else {
+                editor.setValue("");
+              }
+            }
+            updateFileList();
+          }
+        };
+
+        function quickSaveFile(content) {
+          const fileName = prompt("File name to quick save as:");
+          const blob = new Blob([content], { type: "text/plain" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = fileName;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+
+        async function saveAs(content) {
+          const blob = new Blob([content], { type: "text/plain" });
+          const fileHandle = await window.showSaveFilePicker({
+            types: [
+              {
+                description: "Source code",
+                accept: { "text/plain": [".txt"] },
+              },
+            ],
+          });
+          const fileStream = await fileHandle.createWritable();
+          await fileStream.write(blob);
+          await fileStream.close();
+        }
+
+        document.getElementById("save-icon").addEventListener("click", () => {
+          files[currentFile] = editor.getValue();
+          const srcCode = files[currentFile];
+          quickSaveFile(srcCode);
+        });
+
+        document
+          .getElementById("save-as-icon")
+          .addEventListener("click", () => {
+            files[currentFile] = editor.getValue();
+            const srcCode = files[currentFile];
+            saveAs(srcCode);
+          });
+
+        document
+          .getElementById("open-file-icon")
+          .addEventListener("click", () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "*";
+            input.onchange = (e) => {
+              const file = e.target.files[0];
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                files[file.name] = event.target.result;
+                updateFileList();
+                openFile(file.name);
+              };
+              reader.readAsText(file);
+            };
+            input.click();
+          });
+
+        document
+          .getElementById("open-folder-icon")
+          .addEventListener("click", () => {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.webkitdirectory = true;
+            input.onchange = (e) => {
+              const folderFiles = e.target.files;
+              for (let i = 0; i < folderFiles.length; i++) {
+                const file = folderFiles[i];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  files[file.name] = event.target.result;
+                  updateFileList();
+                };
+                reader.readAsText(file);
+              }
+              if (folderFiles.length > 0) {
+                openFile(folderFiles[0].name);
+              }
+            };
+            input.click();
+          });
+
+        document
+          .getElementById("new-file-icon")
+          .addEventListener("click", () => {
+            const fileName = prompt(
+              "Enter the name of the new file:",
+              "new_file.js"
+            );
+            if (fileName) {
+              files[fileName] = "";
+              updateFileList();
+              openFile(fileName);
+            }
+          });
+
+        editor.on("change", () => {
+          files[currentFile] = editor.getValue();
+        });
+
+        // Toggle file explorer
+        const toggleExplorer = document.getElementById("toggle-explorer");
+        const fileExplorer = document.querySelector(".file-explorer");
+        let isExplorerVisible = true;
+
+        toggleExplorer.addEventListener("click", () => {
+          isExplorerVisible = !isExplorerVisible;
+          fileExplorer.classList.toggle("hidden", !isExplorerVisible);
+          toggleExplorer.classList.toggle("flipped", !isExplorerVisible);
+        });
+
+        updateFileList();
+        openFile("Welcome2SneedCode.md");
+      });
+    </script>
+  </body>
+</html>

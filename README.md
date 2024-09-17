@@ -5,4 +5,4 @@ All stable releases will be released at [the releases page.](https://github.com/
 
 Developed with care by the Sneed Group.
 
-<img width="42%" align="center" src="vscode-sneedcode-meme.png"></img>
+<img width="42%" src="vscode-sneedcode-meme.png"></img>

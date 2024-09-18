@@ -341,7 +341,7 @@
         };
 
         window.deleteFile = (fileName) => {
-          if (confirm(`Are you sure you want to delete ${fileName}?`)) {
+          if (confirm(`Are you sure you want to delete ${fileName} from the list of files you are working on? (This WILL remove any changes!)`)) {
             delete files[fileName];
             if (currentFile === fileName) {
               currentFile = Object.keys(files)[0] || "";

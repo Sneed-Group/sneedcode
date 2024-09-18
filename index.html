@@ -226,7 +226,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.js"></script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/gfm/gfm.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/css/css.min.js"></script>
@@ -236,11 +236,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/json/json.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/shell/shell.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/batchmode/batchmode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/vbscript/vbscript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/powershell/powershell.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/php/php.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/vb/vb.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/lua/lua.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/swift/swift.min.js"></script>
     
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -307,7 +310,7 @@
             case "css":
               return "css";
             case "md":
-              return "markdown";
+              return "gfm";
             case "rs":
               return "rust";
             case "go":
@@ -318,6 +321,18 @@
               return "clike";
             case "h":
               return "clike";
+            case "java":
+              return "clike";
+            case "javap":
+              return "clike";
+            case "class":
+              return "clike";
+            case "kt":
+              return "clike";
+            case "swift":
+              return "swift";
+            case "cs":
+              return "clike";
             case "json":
               return "json";
             case "xml":
@@ -326,16 +341,20 @@
               return "python";
             case "sh":
               return "shell";
-            case "bat":
-              return "batchmode";
-            case "cmd":
-              return "batchmode";
+            case "vbs":
+              return "vb";
+            case "vb":
+              return "vbnet";
             case "ps1":
               return "powershell";
             case "php":
               return "php";
             case "rb":
               return "ruby";
+            case "lua":
+              return "lua";
+            case "luau":
+              return "lua";
             default:
               return "text/plain";
           }

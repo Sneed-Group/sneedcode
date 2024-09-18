@@ -230,13 +230,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/rust/rust.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/go/go.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/c/c.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/json/json.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/batchmode/batchmode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/powershell/powershell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/php/php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/clike/clike.min.js"></script>
     
     <script>
       document.addEventListener("DOMContentLoaded", () => {
@@ -246,9 +249,9 @@
           theme: "dracula",
           autoCloseBrackets: true,
           matchBrackets: true,
-          indentUnit: 2,
-          tabSize: 2,
-          indentWithTabs: false,
+          indentUnit: 1,
+          tabSize: 4,
+          indentWithTabs: true,
           lineWrapping: true,
         });
 
@@ -257,7 +260,7 @@
         fileList = document.getElementById("file-list");
         files = {
           "Welcome2SneedCode.md":
-            "# Welcome to sneedCode\n\nThis is a speedy web-based code editor made \n to look familiar to the user but with a different workflow. \n\n Made with <3 by Sneed Group.",
+            "# Welcome to sneedCode\n\nThis is a speedy web-based code editor made \n to look familiar to the user but with a different workflow. \n\n Made with <3 by the Sneed Group.",
         };
         currentFile = "Welcome2SneedCode.md";
 
@@ -308,16 +311,28 @@
               return "rust";
             case "go":
               return "go";
+            case "c":
+              return "clike";
             case "cpp":
-              return "cpp";
+              return "clike";
             case "h":
-              return "cpp";
+              return "clike";
             case "json":
               return "json";
             case "xml":
               return "xml";
             case "py":
               return "python";
+            case "sh":
+              return "shell";
+            case "bat":
+              return "batch";
+            case "cmd":
+              return "batch";
+            case "ps1":
+              return "powershell";
+            case "php":
+              return "php"
             default:
               return "text/plain";
           }

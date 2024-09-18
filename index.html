@@ -545,7 +545,6 @@
                     try {
                     // Load and execute JavaScript code from the file
                       new Function(event.target.result)();
-                      console.log(`Plugin "${file.name}" executed successfully.`);
                     } catch (err) {
                       console.error(`Failed to execute plugin "${file.name}": ${err.message}`);
                       allFilesLoaded = false;

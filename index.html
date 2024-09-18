@@ -333,13 +333,17 @@
         };
 
         function quickSaveFile(content) {
-          const fileName = prompt("File name to quick save as:", `${currentFile}`) || `${currentFile}`;
-          const blob = new Blob([content], { type: "text/plain" });
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = fileName;
-          a.click();
-          URL.revokeObjectURL(a.href);
+          const fileName = prompt("File name to quick save as:", `${currentFile}`);
+          if (fileName) {
+            const blob = new Blob([content], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(a.href);
+          } else {
+            alert("No filename provided. Canceling save...")
+          }
         }
 
         async function saveAs(content) {

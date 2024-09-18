@@ -231,8 +231,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/css/css.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        var codeArea = document.getElementById("code-area");
-        var editor = CodeMirror.fromTextArea(codeArea, {
+       codeArea = document.getElementById("code-area");
+       editor = CodeMirror.fromTextArea(codeArea, {
           lineNumbers: true,
           theme: "dracula",
           autoCloseBrackets: true,
@@ -245,12 +245,12 @@
 
         editor.setSize("100%", "100%");
 
-        var fileList = document.getElementById("file-list");
-        var files = {
+        fileList = document.getElementById("file-list");
+        files = {
           "Welcome2SneedCode.md":
             "# Welcome to sneedCode\n\nThis is a speedy web-based code editor made \n to look familiar to the user but with a different workflow. \n\n Made with <3 by Sneed Group.",
         };
-        let currentFile = "Welcome2SneedCode.md";
+        currentFile = "Welcome2SneedCode.md";
 
         function updateFileList() {
           fileList.innerHTML = "";

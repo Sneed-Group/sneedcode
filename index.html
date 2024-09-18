@@ -224,7 +224,7 @@
         </div>
       </div>
     </div>
-    <div class="status-bar">SneedCode 1.0.0 | UTF-8 | Markdown</div>
+    <div class="status-bar">SneedCode | UTF-8 | Markdown</div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.js"></script>
     
@@ -364,7 +364,7 @@
         function updateStatusBar() {
           const statusBar = document.querySelector(".status-bar");
           const mode = editor.getOption("mode");
-          statusBar.textContent = `SneedCode 1.0.0 | UTF-8 | ${
+          statusBar.textContent = `SneedCode | UTF-8 | ${
             mode.charAt(0).toUpperCase() + mode.slice(1)
           }`;
         }

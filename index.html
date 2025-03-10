@@ -1,591 +1,950 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>sneedCode - Code Editor</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SneedCode</title>
     <style>
-      body,
-      html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-          "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
-          "Helvetica Neue", sans-serif;
-      }
-      .container {
-        display: flex;
-        height: 96.9%;
-      }
-      .sidebar {
-        width: 6%;
-        background-color: #333;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding-top: 10px;
-      }
-      .sidebar-icon {
-        width: 69%;
-        height: auto;
-        margin-bottom: 20px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        padding: 5px;
-        border-radius: 5px;
-      }
-      .sidebar-icon:hover {
-        background-color: #4a4a4a;
-      }
-      .main-content {
-        flex: 1;
-        display: flex;
-      }
-      .file-explorer {
-        width: 23%;
-        min-width: 40px;
-        background-color: #252526;
-        color: #fff;
-        padding: 10px;
-        overflow-y: auto;
-        transition: width 0.3s ease;
-      }
-      .file-explorer.hidden {
-        width: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-      .file-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 5px;
-        cursor: pointer;
-      }
-      .file-item:hover {
-        background-color: #2a2d2e;
-      }
-      .file-actions {
-        display: none;
-      }
-      .file-item:hover .file-actions {
-        display: block;
-      }
-      .file-action {
-        cursor: pointer;
-        margin-left: 5px;
-      }
-      .editor {
-        flex: 1;
-        background-color: #1e1e1e;
-        padding: .3%;
-        width: 1em;
-      }
-      .CodeMirror {
-        height: 100% !important;
-      }
-      .status-bar {
-        height: 2%;
-        background-color: #007acc;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        padding: .3vw;
-        font-size: 1em;
-      }
-      #toggle-explorer {
-        transition: transform 0.3s ease;
-      }
-      #toggle-explorer.flipped {
-        transform: rotate(180deg);
-      }
+        :root {
+            --bg-color: #1e1e1e;
+            --sidebar-bg: #252526;
+            --editor-bg: #1e1e1e;
+            --statusbar-bg: #007acc;
+            --text-color: #d4d4d4;
+            --border-color: #3c3c3c;
+            --active-tab: #1e1e1e;
+            --inactive-tab: #2d2d2d;
+            --button-hover: #2a2d2e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .menubar {
+            background-color: var(--bg-color);
+            padding: 5px 10px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-item {
+            margin-right: 15px;
+            cursor: pointer;
+            padding: 3px 5px;
+            font-size: 13px;
+        }
+
+        .menu-item:hover {
+            background-color: var(--button-hover);
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: var(--sidebar-bg);
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--button-hover);
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 10px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .file-tree {
+            padding: 10px;
+        }
+
+        .directory {
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .directory-name {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            padding: 3px 0;
+        }
+
+        .directory-name:before {
+            content: "📁";
+            margin-right: 5px;
+        }
+
+        .directory.open .directory-name:before {
+            content: "📂";
+        }
+
+        .directory-content {
+            padding-left: 15px;
+            display: none;
+        }
+
+        .directory.open .directory-content {
+            display: block;
+        }
+
+        .file {
+            margin: 2px 0;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .file:before {
+            content: "📄";
+            margin-right: 5px;
+        }
+
+        .file:hover, .directory-name:hover {
+            background-color: var(--button-hover);
+        }
+
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tabs {
+            display: flex;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+            height: 35px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            background-color: var(--inactive-tab);
+            margin-right: 1px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 13px;
+            user-select: none;
+            max-width: 200px;
+            min-width: 120px;
+        }
+
+        .tab.active {
+            background-color: var(--active-tab);
+            border-bottom: 1px solid var(--statusbar-bg);
+        }
+
+        .tab-close {
+            margin-left: auto;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .tab-close:hover {
+            opacity: 1;
+        }
+
+        .editor {
+            flex: 1;
+            background-color: var(--editor-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor textarea {
+            width: 100%;
+            height: 100%;
+            background-color: var(--editor-bg);
+            color: var(--text-color);
+            border: none;
+            resize: none;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            outline: none;
+            tab-size: 4;
+        }
+
+        .status-bar {
+            height: 22px;
+            background-color: var(--statusbar-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 12px;
+        }
+
+        .status-item {
+            margin-right: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            border-radius: 5px;
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .modal-body {
+            margin-bottom: 15px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        button {
+            padding: 8px 12px;
+            background-color: var(--statusbar-bg);
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button.secondary {
+            background-color: #3c3c3c;
+        }
+
+        /* Plugin panel */
+        .plugin-panel {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 300px;
+            background-color: var(--sidebar-bg);
+            border-left: 1px solid var(--border-color);
+            display: none;
+            flex-direction: column;
+            z-index: 5;
+        }
+
+        .plugin-header {
+            padding: 10px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .plugin-content {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .plugin-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .plugin-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .plugin-description {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .plugin-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--statusbar-bg);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            animation: fadeInOut 3s forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .line-numbers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 100%;
+            background-color: var(--bg-color);
+            border-right: 1px solid var(--border-color);
+            text-align: right;
+            padding: 10px 5px 10px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #6e6e6e;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .editor-content {
+            margin-left: 40px;
+            width: calc(100% - 40px);
+            height: 100%;
+        }
     </style>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/theme/dracula.min.css"
-    />
-  </head>
-  <body>
-    <div class="container">
-      <div class="sidebar">
-          <svg
-          class="about-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="file-icon"
-          onclick="alert('sneedCode. Made by Sneed Group with love. Licensed under the SPL-R5')"
-        >
-          <path
-            d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 7h2v2H7V7zm4 0h2v2h-2V7zm4 0h2v2h-2V7z"
-          />
-        </svg>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="toggle-explorer"
-        >
-          <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-        </svg>
-        <hr>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="new-file-icon"
-        >
-          <path
-            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"
-          />
-          <path d="M13 11h-2v3H8v2h3v3h2v-3h3v-2h-3z" />
-        </svg>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="save-icon"
-        >
-          <path
-            d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
-          />
-        </svg>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="save-as-icon"
-        >
-          <path
-            d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
-          />
-          <g transform="translate(15, 15) scale(0.5)">
-            <rect
-              x="0"
-              y="0"
-              width="14"
-              height="14"
-              fill="#333"
-              rx="2"
-              ry="2"
-            />
-            <path d="M6 2v4H2v2h4v4h2V8h4V6H8V2H6z" fill="#fff" />
-          </g>
-        </svg>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="open-file-icon"
-        >
-          <path
-            d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"
-          />
-        </svg>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="open-folder-icon"
-        >
-          <path
-            d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
-          />
-        </svg>
-        <hr>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="open-plugin-icon"
-        >
-          <path d="M15 10H9v5h6v-5zM21 4h-4V2H7v2H3c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7 4h10v2H7V4zm12 16H5V8h14v12z" />
-        </svg>
-        <svg
-          class="sidebar-icon"
-          viewBox="0 0 24 24"
-          fill="#fff"
-          id="open-folder-plugins-icon"
-        >
-          <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
-        </svg>
-      </div>
-      <div class="main-content">
-        <div class="file-explorer">
-          <h3>Explorer</h3>
-          <div id="file-list"></div>
+</head>
+<body>
+    <div class="menubar">
+        <div class="dropdown">
+            <div class="menu-item">File</div>
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="new-file">New File</div>
+                <div class="dropdown-item" id="open-file">Open File...</div>
+                <div class="dropdown-item" id="open-folder">Open Folder...</div>
+                <div class="dropdown-item" id="save-file">Save</div>
+                <div class="dropdown-item" id="save-as">Save As...</div>
+            </div>
         </div>
-        <div class="editor">
-          <textarea id="code-area" spellcheck="false"></textarea>
+        <div class="dropdown">
+            <div class="menu-item">Edit</div>
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="undo">Undo</div>
+                <div class="dropdown-item" id="redo">Redo</div>
+                <div class="dropdown-item" id="cut">Cut</div>
+                <div class="dropdown-item" id="copy">Copy</div>
+                <div class="dropdown-item" id="paste">Paste</div>
+            </div>
         </div>
-      </div>
+        <div class="dropdown">
+            <div class="menu-item">View</div>
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="toggle-sidebar">Toggle Sidebar</div>
+                <div class="dropdown-item" id="toggle-plugins">Plugins</div>
+            </div>
+        </div>
+        <div class="dropdown">
+            <div class="menu-item">Help</div>
+            <div class="dropdown-content">
+                <div class="dropdown-item" id="about">About</div>
+            </div>
+        </div>
     </div>
-    <div class="status-bar">sneedCode | Markdown</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.js"></script>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                EXPLORER
+                <button id="new-file-btn">+</button>
+            </div>
+            <div class="file-tree" id="file-tree"></div>
+        </div>
+
+        <div class="editor-container">
+            <div class="tabs" id="tabs"></div>
+            <div class="editor" id="editor">
+                <div class="line-numbers" id="line-numbers"></div>
+                <div class="editor-content">
+                    <textarea id="editor-textarea" spellcheck="false"></textarea>
+                </div>
+            </div>
+            <div class="plugin-panel" id="plugin-panel">
+                <div class="plugin-header">
+                    Plugins
+                    <button id="close-plugins">×</button>
+                </div>
+                <div class="plugin-content" id="plugin-list"></div>
+            </div>
+            <div class="status-bar">
+                <div class="status-left">
+                    <span class="status-item" id="line-col">Ln 1, Col 1</span>
+                    <span class="status-item" id="file-type">Plain Text</span>
+                </div>
+                <div class="status-right">
+                    <span class="status-item" id="encoding">UTF-8</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save As Modal -->
+    <div class="modal" id="save-as-modal">
+        <div class="modal-content">
+            <div class="modal-header">Save As</div>
+            <div class="modal-body">
+                <input type="text" id="save-filename" placeholder="Enter filename">
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" id="save-as-cancel">Cancel</button>
+                <button id="save-as-confirm">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New File Modal -->
+    <div class="modal" id="new-file-modal">
+        <div class="modal-content">
+            <div class="modal-header">New File</div>
+            <div class="modal-body">
+                <input type="text" id="new-filename" placeholder="Enter filename">
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" id="new-file-cancel">Cancel</button>
+                <button id="new-file-confirm">Create</button>
+            </div>
+        </div>
+    </div>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/markdown/markdown.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/go/go.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/json/json.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/shell/shell.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/vbscript/vbscript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/powershell/powershell.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/php/php.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/clike/clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/ruby/ruby.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/vb/vb.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/lua/lua.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/mode/swift/swift.min.js"></script>
+    <!-- Install Plugin Modal -->
+    <div class="modal" id="install-plugin-modal">
+        <div class="modal-content">
+            <div class="modal-header">Install Plugin</div>
+            <div class="modal-body">
+                <input type="file" id="plugin-file" accept=".js">
+                <div id="plugin-validation-message" style="color: #ff6b6b; margin-top: 10px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" id="install-plugin-cancel">Cancel</button>
+                <button id="install-plugin-confirm">Install</button>
+            </div>
+        </div>
+    </div>
     
+    <div class="notification" id="notification"></div>
+
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-       codeArea = document.getElementById("code-area");
-       editor = CodeMirror.fromTextArea(codeArea, {
-          lineNumbers: true,
-          theme: "dracula",
-          autoCloseBrackets: true,
-          matchBrackets: true,
-          indentUnit: 1,
-          tabSize: 4,
-          indentWithTabs: true,
-          lineWrapping: false,
-        });
-
-        editor.setSize("100%", "100%");
-
-        fileList = document.getElementById("file-list");
-        files = {
-          "Welcome2SneedCode.md":
-            "# Welcome to sneedCode\n\nThis is a speedy web-based code editor made \nto look familiar to the user but with a different workflow.\n\nMade with <3 by the Sneed Group.",
-        };
-        currentFile = "Welcome2SneedCode.md";
-
-        function updateFileList() {
-          fileList.innerHTML = "";
-          Object.keys(files).forEach((fileName) => {
-            const fileItem = document.createElement("div");
-            fileItem.className = "file-item";
-            fileItem.innerHTML = `
-            <span>${fileName}</span>
-            <span class="file-actions">
-              <span class="file-action" onclick="renameFile('${fileName}')">🖊️</span>
-              <span class="file-action" onclick="deleteFile('${fileName}')">🗑️</span>
-            </span>
-          `;
-            fileItem.onclick = (e) => {
-              if (!e.target.classList.contains("file-action")) {
-                openFile(fileName);
-              }
-            };
-            fileList.appendChild(fileItem);
-          });
-        }
-
-        funcUpdateList = updateFileList;
-
-        function openFile(fileName) {
-          currentFile = fileName;
-          editor.setValue(files[fileName]);
-          editor.setOption("mode", getFileMode(fileName));
-          updateStatusBar();
-        }
-
-        funcOpenFile = openFile;
-
-        function getFileMode(fileName) {
-          const extension = fileName.split(".").pop().toLowerCase();
-          switch (extension) {
-            case "js":
-              return "javascript";
-            case "html":
-              return "htmlmixed";
-            case "css":
-              return "css";
-            case "md":
-              return "markdown";
-            case "go":
-              return "go";
-            case "c":
-              return "clike";
-            case "cpp":
-              return "clike";
-            case "h":
-              return "clike";
-            case "java":
-              return "clike";
-            case "javap":
-              return "clike";
-            case "class":
-              return "clike";
-            case "kt":
-              return "clike";
-            case "swift":
-              return "swift";
-            case "cs":
-              return "clike";
-            case "json":
-              return "json";
-            case "xml":
-              return "xml";
-            case "py":
-              return "python";
-            case "sh":
-              return "shell";
-            case "vbs":
-              return "vb";
-            case "vb":
-              return "vbnet";
-            case "ps1":
-              return "powershell";
-            case "php":
-              return "php";
-            case "rb":
-              return "ruby";
-            case "lua":
-              return "lua";
-            case "luau":
-              return "lua";
-            default:
-              return "text/plain";
-          }
-        }
-
-        funcGetMode = getFileMode;
-
-        function updateStatusBar() {
-          const statusBar = document.querySelector(".status-bar");
-          const mode = editor.getOption("mode");
-          statusBar.textContent = `sneedCode | ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-        }
-
-        funcUpdateStatusBar = updateStatusBar;
-
-        window.renameFile = (oldName) => {
-          const newName = prompt("Enter new file name:", oldName);
-          if (newName && newName !== oldName) {
-            files[newName] = files[oldName];
-            delete files[oldName];
-            if (currentFile === oldName) {
-              currentFile = newName;
-            }
-            updateFileList();
-            updateStatusBar();
-          }
+        // Editor State
+        const state = {
+            files: {}, // filename -> content
+            currentFile: null,
+            openFiles: [], // {filename, modified}
+            fileTree: {}, // path -> {type, children}
+            history: {}, // filename -> {past: [], future: []}
+            plugins: []
         };
 
-        window.deleteFile = (fileName) => {
-          if (confirm(`Are you sure you want to delete ${fileName} from the list of files you are working on? (This WILL remove any changes!)`)) {
-            delete files[fileName];
-            if (currentFile === fileName) {
-              currentFile = Object.keys(files)[0] || "";
-              if (currentFile) {
-                openFile(currentFile);
-              } else {
-                editor.setValue("");
-              }
-            }
-            updateFileList();
-          }
+        // DOM Elements
+        const elements = {
+            fileTree: document.getElementById('file-tree'),
+            tabs: document.getElementById('tabs'),
+            editor: document.getElementById('editor'),
+            textarea: document.getElementById('editor-textarea'),
+            lineNumbers: document.getElementById('line-numbers'),
+            lineCol: document.getElementById('line-col'),
+            fileType: document.getElementById('file-type'),
+            saveAsModal: document.getElementById('save-as-modal'),
+            saveFilename: document.getElementById('save-filename'),
+            newFileModal: document.getElementById('new-file-modal'),
+            newFilename: document.getElementById('new-filename'),
+            notification: document.getElementById('notification'),
+            pluginPanel: document.getElementById('plugin-panel'),
+            pluginList: document.getElementById('plugin-list'),
+            installPluginModal: document.getElementById('install-plugin-modal'),
+            pluginFile: document.getElementById('plugin-file'),
+            pluginValidationMessage: document.getElementById('plugin-validation-message')
         };
 
-        function quickSaveFile(content) {
-          const fileName = prompt("File name to quick save as:", `${currentFile}`);
-          if (fileName) {
-            const blob = new Blob([content], { type: "text/plain" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(a.href);
-          } else {
-            alert("No filename provided. Canceling save...")
-          }
+        // Event Listeners
+        document.getElementById('new-file').addEventListener('click', () => openNewFileModal());
+        document.getElementById('new-file-btn').addEventListener('click', () => openNewFileModal());
+        document.getElementById('open-file').addEventListener('click', openFile);
+        document.getElementById('open-folder').addEventListener('click', openFolder);
+        document.getElementById('save-file').addEventListener('click', saveFile);
+        document.getElementById('save-as').addEventListener('click', () => openSaveAsModal());
+        document.getElementById('save-as-cancel').addEventListener('click', () => closeModal(elements.saveAsModal));
+        document.getElementById('save-as-confirm').addEventListener('click', saveFileAs);
+        document.getElementById('new-file-cancel').addEventListener('click', () => closeModal(elements.newFileModal));
+        document.getElementById('new-file-confirm').addEventListener('click', createNewFile);
+        document.getElementById('toggle-sidebar').addEventListener('click', toggleSidebar);
+        document.getElementById('toggle-plugins').addEventListener('click', togglePlugins);
+        document.getElementById('close-plugins').addEventListener('click', togglePlugins);
+        document.getElementById('install-plugin-cancel').addEventListener('click', () => closeModal(elements.installPluginModal));
+        document.getElementById('install-plugin-confirm').addEventListener('click', installPlugin);
+        document.getElementById('about').addEventListener('click', () => alert("SneedCode - made with <3 by Sneed Group. Version 3.0"));
+
+        // Initialize editor with line numbers
+        elements.textarea.addEventListener('input', handleEditorInput);
+        elements.textarea.addEventListener('keydown', handleEditorKeydown);
+        elements.textarea.addEventListener('scroll', syncLineNumbersScroll);
+        elements.textarea.addEventListener('click', updateCursorPosition);
+        elements.textarea.addEventListener('keyup', updateCursorPosition);
+
+        // Initialize the editor
+        init();
+
+        function init() {
+            updateLineNumbers();
+            updateCursorPosition();
+            createDefaultStructure();
+            // Add example plugin
+            addBuiltInPlugins();
         }
 
-        funcQuickSave = quickSaveFile;
-
-        async function saveAs(content) {
-          const blob = new Blob([content], { type: "text/plain" });
-          const extension = currentFile.split(".").pop().toLowerCase();
-          const fileHandle = await window.showSaveFilePicker({
-            types: [
-              {
-                description: "Source code",
-                accept: { "text/plain": [`.${extension || "txt"}`] },
-              },
-            ],
-          });
-          const fileStream = await fileHandle.createWritable();
-          await fileStream.write(blob);
-          await fileStream.close();
+        function createDefaultStructure() {
+            // Create a default file structure
+            state.fileTree = {
+                '/': { type: 'directory', children: {
+                    'src': { type: 'directory', children: {
+                        'index.js': { type: 'file' },
+                        'styles.css': { type: 'file' }
+                    }},
+                    'README.md': { type: 'file' }
+                }}
+            };
+            
+            // Add sample content to files
+            state.files['src/index.js'] = 'console.log("Hello, world!");\n\n// Write your code here\n';
+            state.files['src/styles.css'] = 'body {\n  font-family: sans-serif;\n  margin: 0;\n  padding: 20px;\n}\n';
+            state.files['README.md'] = '# My Project\n\nWelcome to my awesome project!\n';
+            
+            renderFileTree();
         }
 
-        funcSaveAs = saveAs
-
-        document.getElementById("save-icon").addEventListener("click", () => {
-          files[currentFile] = editor.getValue();
-          const srcCode = files[currentFile];
-          quickSaveFile(srcCode);
-        });
-
-        document
-          .getElementById("save-as-icon")
-          .addEventListener("click", () => {
-            files[currentFile] = editor.getValue();
-            const srcCode = files[currentFile];
-            saveAs(srcCode);
-          });
-
-        document
-          .getElementById("open-file-icon")
-          .addEventListener("click", () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "*";
-            input.onchange = (e) => {
-              const file = e.target.files[0];
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                files[file.name] = event.target.result;
-                updateFileList();
-                openFile(file.name);
-              };
-              reader.readAsText(file);
-            };
-            input.click();
-          });
-
-        document
-          .getElementById("open-folder-icon")
-          .addEventListener("click", () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.webkitdirectory = true;
-            input.onchange = (e) => {
-              const folderFiles = e.target.files;
-              for (let i = 0; i < folderFiles.length; i++) {
-                const file = folderFiles[i];
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  files[file.name] = event.target.result;
-                  updateFileList();
-                };
-                reader.readAsText(file);
-              }
-              if (folderFiles.length > 0) {
-                openFile(folderFiles[0].name);
-              }
-            };
-            input.click();
-          });
-
-        document
-          .getElementById("new-file-icon")
-          .addEventListener("click", () => {
-            const fileName = prompt(
-              "Enter the name of the new file:",
-              "new_file.js"
-            );
-            if (fileName) {
-              files[fileName] = "";
-              updateFileList();
-              openFile(fileName);
-            }
-          });
-
-        document
-          .getElementById("open-plugin-icon")
-          .addEventListener("click", () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = ".js";
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                try {
-                  // Load and execute JavaScript code from the file
-                  new Function(event.target.result)();
-                  alert(`Plugin "${file.name}" executed successfully.`);
-                } catch (err) {
-                  alert(`Failed to execute plugin "${file.name}": ${err.message}`);
-                }
-              };
-              reader.readAsText(file);
-            };
-            input.click();
-          });
-
-        document
-          .getElementById("open-folder-plugins-icon")
-          .addEventListener("click", () => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.webkitdirectory = true;
-            input.onchange = (e) => {
-              const folderFiles = e.target.files;
-              let allFilesLoaded = true;
-
-              for (let i = 0; i < folderFiles.length; i++) {
-                const file = folderFiles[i];
-                if (file.name.endsWith(".js")) {
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    try {
-                    // Load and execute JavaScript code from the file
-                      new Function(event.target.result)();
-                    } catch (err) {
-                      console.error(`Failed to execute plugin "${file.name}": ${err.message}`);
-                      allFilesLoaded = false;
+        function addBuiltInPlugins() {
+            // Add some built-in plugins as examples
+            const syntaxHighlighterPlugin = {
+                name: 'Syntax Highlighter',
+                description: 'Adds syntax highlighting for various programming languages',
+                source: `
+                    // Plugin: Syntax Highlighter
+                    // Description: Adds syntax highlighting for various languages
+                    
+                    function initPlugin() {
+                        console.log("Syntax Highlighter plugin loaded");
+                        return {
+                            name: "Syntax Highlighter",
+                            description: "Highlights syntax for JavaScript, HTML, CSS, and more",
+                            version: "1.0.0",
+                            onTextChange: function(text, filename) {
+                                // This is where the highlighting logic would be implemented
+                                console.log("Highlighting file: " + filename);
+                                return text; // Return unmodified text for now
+                            }
+                        };
                     }
-                  };
-                  reader.readAsText(file);
-                }
-              }
-
-              if (allFilesLoaded) {
-                alert("All plugins executed successfully.");
-              } else {
-                alert("Some plugins failed to execute. Check console for details.");
-              }
+                    
+                    initPlugin();
+                `,
+                active: true
             };
-            input.click();
-          });
-
-        editor.on("change", () => {
-          files[currentFile] = editor.getValue();
-        });
-
-        // Toggle file explorer
-        toggleExplorer = document.getElementById("toggle-explorer");
-        fileExplorer = document.querySelector(".file-explorer");
-        let isExplorerVisible = true;
-
-
-        function te() {
-          isExplorerVisible = !isExplorerVisible;
-          fileExplorer.classList.toggle("hidden", !isExplorerVisible);
-          toggleExplorer.classList.toggle("flipped", !isExplorerVisible);
+            
+            const autoIndentPlugin = {
+                name: 'Auto Indent',
+                description: 'Automatically indents code as you type',
+                source: `
+                    // Plugin: Auto Indent
+                    // Description: Automatically indents code
+                    
+                    function initPlugin() {
+                        console.log("Auto Indent plugin loaded");
+                        return {
+                            name: "Auto Indent",
+                            description: "Automatically indents your code",
+                            version: "1.0.0",
+                            onKeyPress: function(key, text) {
+                                if (key === "Enter") {
+                                    // Logic to determine indentation level
+                                    console.log("Auto indenting after Enter key");
+                                }
+                                return null; // Return null to let editor handle default behavior
+                            }
+                        };
+                    }
+                    
+                    initPlugin();
+                `,
+                active: false
+            };
+            
+            state.plugins.push(syntaxHighlighterPlugin, autoIndentPlugin);
+            renderPluginList();
         }
 
-        toggleExplorer.addEventListener("click", () => {
-          te()
-        });
+        function openFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const filename = file.name;
+                        state.files[filename] = e.target.result;
+                        openFileInEditor(filename);
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
 
-        funcToggleExplorer = te
+        function openFolder() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.webkitdirectory = true;
+            input.onchange = (event) => {
+                const files = event.target.files;
+                if (files.length > 0) {
+                    const rootFolder = files[0].webkitRelativePath.split('/')[0];
+                    
+                    // Reset file tree and create root
+                    state.fileTree = {
+                        '/': { type: 'directory', children: {
+                            [rootFolder]: { type: 'directory', children: {} }
+                        }}
+                    };
+                    
+                    // Process each file
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const path = file.webkitRelativePath;
+                        const pathParts = path.split('/');
+                        
+                        // Create directory structure
+                        let currentLevel = state.fileTree['/'].children;
+                        for (let j = 1; j < pathParts.length; j++) {
+                            const part = pathParts[j];
+                            
+                            if (j === pathParts.length - 1) {
+                                // This is a file
+                                currentLevel[part] = { type: 'file' };
+                                
+                                // Load file content
+                                const reader = new FileReader();
+                                reader.onload = (function(filename) {
+                                    return function(e) {
+                                        state.files[path] = e.target.result;
+                                    };
+                                })(path);
+                                reader.readAsText(file);
+                            } else {
+                                // This is a directory
+                                if (!currentLevel[part]) {
+                                    currentLevel[part] = { type: 'directory', children: {} };
+                                }
+                                currentLevel = currentLevel[part].children;
+                            }
+                        }
+                    }
+                    
+                    renderFileTree();
+                    showNotification(`Opened folder: ${rootFolder}`);
+                }
+            };
+            input.click();
+        }
 
-        updateFileList();
-        openFile("Welcome2SneedCode.md");
-      });
-    </script>
-  </body>
-</html>
+        function openNewFileModal() {
+            elements.newFilename.value = '';
+            openModal(elements.newFileModal);
+            elements.newFilename.focus();
+        }
+
+        function createNewFile() {
+            const filename = elements.newFilename.value.trim();
+            if (filename) {
+                state.files[filename] = '';
+                openFileInEditor(filename);
+                closeModal(elements.newFileModal);
+                
+                // Add to file tree
+                state.fileTree['/'].children[filename] = { type: 'file' };
+                renderFileTree();
+            }
+        }
+
+        function saveFile() {
+            if (!state.currentFile) {
+                openSaveAsModal();
+                return;
+            }
+            
+            // In a browser environment, we trigger a download
+            const content = elements.textarea.value;
+            downloadFile(state.currentFile, content);
+            
+            // Mark as saved
+            updateFileState(state.currentFile, content, false);
+            showNotification(`File saved: ${state.currentFile}`);
+        }
+
+        function openSaveAsModal() {
+            elements.saveFilename.value = state.currentFile || '';
+            openModal(elements.saveAsModal);
+            elements.saveFilename.focus();
+        }
+
+        function saveFileAs() {
+            const filename = elements.saveFilename.value.trim();
+            if (filename) {
+                const content = elements.textarea.value;
+                state.files[filename] = content;
+                
+                // Download file
+                downloadFile(filename, content);
+                
+                // Update UI
+                closeModal(elements.saveAsModal);
+                state.currentFile = filename;
+                updateFileState(filename, content, false);
+                
+                // If this is a new file, add to the file tree
+                if (!findNodeInFileTree(filename)) {
+                    state.fileTree['/'].children[filename] = { type: 'file' };
+                    renderFileTree();
+                }
+                
+                showNotification(`File saved as: ${filename}`);
+            }
+        }
+
+        function findNodeInFileTree(path) {
+            const parts = path.split('/');
+            let current = state.fileTree['/'].children;
+            
+            for (let i = 0; i < parts.length; i++) {
+                if (!current[parts[i]]) {
+                    return null;
+                }
+                if (i === parts.length - 1) {
+                    return current[parts[i]];
+                }
+                current = current[parts[i]].children;
+            }
+            return null;
+        }
+
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function openFileInEditor(filename) {
+            if (!isFileOpen(filename)) {
+                state.openFiles.push({
+                    filename,
+                    modified: false
+                });
+            }
+            
+            state.currentFile = filename;
+            elements.textarea.value = state.files[filename] || '';
+            updateLineNumbers();
+            renderTabs();
+            detectFileType(filename);
+            
+            // Initialize history for this file if needed
+            if (!state.history[filename]) {
+                state.history[filename] = {
+                    past: [],
+                    future: []
+                };
+            }
+        }
+
+        function isFileOpen(filename) {
+            return state.openFiles.some(file => file.filename === filename);
+        }
+
+        function detectFileType(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            let fileType = 'Plain Text';
+            
+            switch (extension) {
+                case 'js':
+                    fileType = 'JavaScript';
+                    break;
+                case 'html':
+                    fileType = 'HTML';
+                    break;
+                case 'css':
+                    fileType = 'CSS';
+                    break;
+                case 'json':
+                    fileType = 'JSON';
+                    break;
+                case 'md':
+                    fileType = 'Markdown';
+                    break;
+                case 'py':
+                    fileType = 'Python';
+                    break;
+                case 'java':
+                    fileType = 'Java';
+                    break;
+                case 'php':
+                    fileType = 'PHP';
+                    break;
+            }
+            
+            elements.fileType.textContent = fileType;
+        }
+
+        function updateFileState(filename, content, modified) {
+            state.files[filename] = content;
+            
+            // Update open files array
+            for (let i = 0; i < state.openFiles.length; i++) {
+                if (state.openFiles[i].filename === filename) {
+                    state.openFiles[i].modified = modified;
+                    break;
+                }
+            }
+            
+            renderTabs();
+        }
+
+        function closeFile(filename) {
+            state.openFiles = state.openFiles.filter(file => file.filename !== filename);
+            
+            if (state.currentFile === filename) {
+                state.currentFile = state.openFiles.length > 0 ? state.openFiles[state.openFiles.length - 1].filename : null;
+                if (state.currentFile) {
+                    elements.textarea.value = state.files[state.currentFile] || '';
+                    updateLineNumbers();
+                    detectFileType(state.currentFile);
+                } else {
+                    elements.textarea.value = '';
+                    updateLineNumbers();
+                    elements.fileType.textContent = 'Plain Text';
+                }
+            }
+            
+            renderTabs();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function togglePlugins() {
+            elements.pluginPanel.style.display = elements.pluginPanel.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function renderFileTree() {
+            elements.fileTree.innerHTML = '';
+            renderDirectory('/', state.fileTree['/'].children);
+        }
+
+        function renderDirectory(path, children) {
+            const list = document.createElement('div');
+            
+            // Sort: directories first, then files
+            const sortedEntries = Object.entries(children).sort((a, b) => {
+                if (a[1].type === 'directory' && b[1].type !== 'directory') return -1;
+                if (a[1].type !== 'directory' && b[1].type === 'directory') return 1;
